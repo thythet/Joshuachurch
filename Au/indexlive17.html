@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ស្ដាប់ព្រះបន្ទូល</title>
+  <link rel="icon" type="image/svg+xml" href="https://thythet.com/assets/audio/mic-fill.svg?v=2">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Krasar';
+      src: url('http://thythet.com/assets/fonts/Krasar.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Kantumruy Pro', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(106,168,255,0.14), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(61,104,163,0.18), transparent 28%),
+        #101925;
+      color: #f3f3f3;
+      min-height: 100vh;
+    }
+    body.preloading { overflow: hidden; }
+    body.preloading .page-wrap,
+    body.preloading #podcastTool,
+    body.preloading #podcastToolBtn,
+    body.preloading #broadcastToolBtn,
+    body.preloading #themeToggleBtn { opacity: 0; }
+
+    body.theme-gray {
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.06), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 24%),
+        #111315;
+    }
+    body.theme-gray .glass-card,
+    body.theme-gray .home-track-card,
+    body.theme-gray .home-all-track-card,
+    body.theme-gray .track-card,
+    body.theme-gray #podcastTool,
+    body.theme-gray #broadcastModal,
+    body.theme-gray .broadcast-item {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+    }
+    body.theme-gray .floating-btn,
+    body.theme-gray .broadcast-action-btn,
+    body.theme-gray .broadcast-mini-btn,
+    body.theme-gray .broadcast-close-btn,
+    body.theme-gray .header-buttons button,
+    body.theme-gray .player-btn {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    #sitePreloader {
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top left, rgba(106,168,255,0.16), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(61,104,163,0.18), transparent 28%),
+        #101925;
+      transition: opacity .45s ease, visibility .45s ease;
+    }
+    #sitePreloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .preloader-mark {
+      width: 76px; height: 76px; border-radius: 24px;
+      background: linear-gradient(135deg, rgba(89,166,255,0.3), rgba(61,104,163,0.16));
+      border: 1px solid rgba(140,180,235,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 34px; color: #fff;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); box-shadow: 0 0 0 rgba(125,184,255,0); }
+      50% { transform: scale(1.04); box-shadow: 0 0 30px rgba(125,184,255,0.16); }
+    }
+
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 20px 100px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .subtext {
+      font-family: 'Krasar', 'Kantumruy Pro', sans-serif;
+      color: #c8c8c8;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+      font-size: 15px;
+      font-weight: 400;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    .glass-card, .home-track-card, .home-all-track-card, .track-card, #podcastTool, #broadcastModal, .broadcast-item {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(12px);
+    }
+
+    #liveBox { display: none; margin-bottom: 24px; text-align: left; }
+    .live-card {
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(190,30,45,0.16), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,95,95,0.22);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.18);
+    }
+    .live-topline {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 999px;
+      background: rgba(255,76,76,0.14); color: #ffd7d7;
+      font-size: 12px; font-weight: 700; letter-spacing: .5px;
+    }
+    .live-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #ff5f5f;
+      box-shadow: 0 0 0 rgba(255,95,95,0.4); animation: livePulse 1.3s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,95,95,0.35); }
+      50% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(255,95,95,0); }
+    }
+    .live-bars { display: inline-flex; align-items: end; gap: 4px; height: 20px; }
+    .live-bars span {
+      width: 4px; border-radius: 999px; background: rgba(255,255,255,0.86);
+      animation: liveBars .9s ease-in-out infinite; transform-origin: bottom;
+    }
+    .live-bars span:nth-child(1) { height: 7px; animation-delay: 0s; }
+    .live-bars span:nth-child(2) { height: 13px; animation-delay: .15s; }
+    .live-bars span:nth-child(3) { height: 18px; animation-delay: .3s; }
+    .live-bars span:nth-child(4) { height: 11px; animation-delay: .45s; }
+    @keyframes liveBars {
+      0%,100% { transform: scaleY(.7); opacity: .7; }
+      50% { transform: scaleY(1.15); opacity: 1; }
+    }
+    .live-title { font-size: 1.15rem; font-weight: 700; line-height: 1.5; margin-bottom: 4px; }
+    .live-speaker { font-size: 14px; color: #e0e0e0; line-height: 1.6; margin-bottom: 12px; }
+    .live-meta { display: flex; gap: 14px; flex-wrap: wrap; color: #d7d7d7; font-size: 13px; margin-bottom: 14px; line-height: 1.6; }
+    .live-play-btn, .glass-more-btn, .broadcast-action-btn, .broadcast-mini-btn, .broadcast-toggle-preview-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      transition: .22s ease;
+    }
+    .live-play-btn:hover, .glass-more-btn:hover, .broadcast-action-btn:hover, .broadcast-mini-btn:hover, .broadcast-toggle-preview-btn:hover {
+      background: rgba(89,166,255,0.18);
+      transform: translateY(-1px);
+    }
+    .live-view-count, .count-badge, .like-count, .footer-visitors, .share-track-btn { color: #9ecfff; white-space: nowrap; }
+    .share-track-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      border: none; background: transparent; padding: 0; cursor: pointer; font: inherit;
+    }
+    .like-btn {
+      width: auto; height: auto; border: none; background: transparent;
+      color: #ffffff; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 28px; cursor: pointer; padding: 0; line-height: 1; transition: .2s ease;
+    }
+    .like-btn:hover { transform: scale(1.04); }
+    .like-btn.liked { color: #f04b6a; }
+
+    .home-latest-wrap { margin-top: 34px; text-align: left; }
+    .latest-tracks, .home-all-tracks, #playlistBox, .broadcast-list {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .home-track-card, .track-card {
+      display: flex; gap: 12px; align-items: center;
+      padding: 12px; border-radius: 18px; cursor: pointer; transition: .25s ease;
+    }
+    .home-all-track-card {
+      display: flex; gap: 10px; align-items: center;
+      padding: 8px 10px; border-radius: 15px; cursor: pointer; transition: .25s ease;
+    }
+    .home-track-card:hover, .home-all-track-card:hover, .track-card:hover { background: rgba(89,166,255,0.16); }
+    .track-card.active { background: rgba(89,166,255,0.24); border-color: rgba(89,166,255,0.35); }
+    .home-track-thumb, .home-all-track-thumb, .track-thumb {
+      object-fit: cover; border-radius: 14px; background: rgba(255,255,255,0.08); flex-shrink: 0;
+    }
+    .home-track-thumb { width: 72px; height: 72px; }
+    .home-all-track-thumb { width: 44px; height: 44px; border-radius: 10px; }
+    .track-thumb { width: 56px; height: 56px; border-radius: 12px; }
+    .placeholder-thumb {
+      display: flex; align-items: center; justify-content: center;
+      color: #9ecfff; background: rgba(255,255,255,0.08);
+    }
+    .placeholder-thumb i { font-size: 26px; }
+    .home-track-meta, .home-all-track-meta, .track-meta { min-width: 0; flex: 1; text-align: left; }
+    .home-track-title, .track-title, #nowPlayingTitle {
+      font-size: 16px; font-weight: 700; line-height: 1.5; margin-bottom: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .home-all-track-title { font-size: 12px; font-weight: 700; line-height: 1.5; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .home-track-subtitle, .track-preacher, #nowPlayingSubtitle {
+      font-size: 13px; font-weight: 500; color: #d4d4d4; line-height: 1.5;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .home-all-track-subtitle, .track-subtitle { font-size: 11px; color: #d0d0d0; line-height: 1.5; }
+    .home-track-date, .home-all-track-date, .track-date, #nowPlayingExtra {
+      font-size: 12px; font-weight: 300; color: #ababab;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.5;
+    }
+    .home-all-track-date { font-size: 10px; }
+    .home-track-play, .track-play, .home-all-track-play {
+      border-radius: 50%; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .home-track-play { width: 42px; height: 42px; font-size: 18px; }
+    .home-all-track-play { width: 30px; height: 30px; font-size: 13px; }
+    .track-play { width: 34px; height: 34px; font-size: 16px; }
+    .home-all-tracks-wrap { margin-top: 16px; }
+    .home-all-tracks, #playlistBox { max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+    .empty-text { text-align: center; color: #bdbdbd; padding: 20px 8px; line-height: 1.7; font-size: 14px; }
+
+    .floating-btn {
+      position: fixed; bottom: 30px;
+      width: 54px; height: 54px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px); color: #fff;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 24px; box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      z-index: 9999; transition: .25s ease;
+    }
+    .floating-btn:hover { transform: translateY(-2px); background: rgba(89,166,255,0.22); }
+    #podcastToolBtn { right: 30px; }
+    #broadcastToolBtn { left: 30px; font-size: 22px; }
+    #themeToggleBtn { right: 30px; bottom: 96px; font-size: 22px; }
+
+    #podcastTool {
+      position: fixed; right: 24px; top: 24px;
+      width: 460px; max-width: calc(100vw - 32px);
+      height: calc(100vh - 48px); max-height: 820px;
+      display: none; flex-direction: column;
+      border-radius: 22px; overflow: hidden; z-index: 10000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.08);
+      cursor: grab; user-select: none;
+    }
+    .header-title { display: flex; align-items: center; gap: 10px; font-weight: 700; line-height: 1.5; }
+    .header-buttons { display: flex; gap: 8px; }
+    .header-buttons button, .player-btn, .broadcast-close-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06); color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: .25s ease; font-size: 17px;
+    }
+    .header-buttons button:hover, .player-btn:hover, .broadcast-close-btn:hover { background: rgba(89,166,255,0.22); }
+    .content { display: flex; flex-direction: column; gap: 12px; padding: 14px; min-height: 0; flex: 1; }
+    #podcastSearch, .broadcast-field input, .broadcast-field textarea {
+      width: 100%; padding: 12px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      outline: none; background: rgba(255,255,255,0.08); color: #fff; font-size: 14px;
+      font-family: 'Kantumruy Pro', sans-serif;
+    }
+    #podcastSearch::placeholder, .broadcast-field input::placeholder, .broadcast-field textarea::placeholder { color: #bcbcbc; }
+    #nowPlayingCard {
+      display: flex; gap: 12px; padding: 12px; border-radius: 18px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10); align-items: center;
+    }
+    #nowPlayingThumb {
+      width: 72px; height: 72px; border-radius: 14px; background: rgba(255,255,255,0.08);
+      flex-shrink: 0; overflow: hidden;
+    }
+    #nowPlayingThumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #nowPlayingThumb.thumb-placeholder { display: flex; align-items: center; justify-content: center; color: #9ecfff; font-size: 30px; }
+    #nowPlayingMeta { min-width: 0; flex: 1; text-align: left; }
+    #nowPlayingLabel { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #b6b6b6; margin-bottom: 6px; font-weight: 500; line-height: 1.5; }
+    #nowPlayingActions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    #glassPlayer {
+      padding: 14px; border-radius: 18px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10);
+    }
+    #playerControls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .player-btn { width: 50px; height: 50px; font-size: 21px; }
+    .player-btn.active { background: rgba(89,166,255,0.24); color: #9fd0ff; border-color: rgba(89,166,255,0.45); }
+    #playerStatus { text-align: center; font-size: 12px; color: #bdbdbd; min-height: 16px; margin-top: 10px; line-height: 1.5; }
+    #timeBar {
+      margin-top: 12px;
+      height: 6px; border-radius: 999px;
+      background: rgba(255,255,255,0.08); overflow: hidden;
+    }
+    #timeBarFill { width: 0%; height: 100%; background: #ff8a5b; transition: width .2s linear; }
+    #timeLabels {
+      display: flex; justify-content: space-between; font-size: 12px; color: #d0d0d0; margin-top: 8px; line-height: 1.5;
+    }
+
+    #podcastFooter {
+      margin-top: auto; padding: 12px 14px 14px; text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-inline {
+      font-size: 12px; line-height: 1.6; color: #a8a8a8; font-weight: 300;
+      display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; text-align: center;
+    }
+    .footer-inline .dot { color: #7f7f7f; }
+
+    #broadcastOverlay {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      padding: 20px; background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); z-index: 10020;
+    }
+    #broadcastOverlay.open { display: flex; }
+    #broadcastModal {
+      width: min(560px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
+      border-radius: 24px; background: rgba(20,20,20,0.94); box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+    .broadcast-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 18px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .broadcast-title { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; line-height: 1.5; }
+    .broadcast-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 14px; text-align: left; }
+    .broadcast-help, .broadcast-status { font-size: 13px; color: #c8c8c8; line-height: 1.7; margin: 0; min-height: 18px; }
+    .broadcast-auth, .broadcast-panel, .broadcast-list-wrap, .broadcast-export-wrap, .broadcast-live-wrap {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .hidden { display: none !important; }
+    .broadcast-section-title {
+      font-size: 13px; font-weight: 700; color: #d7d7d7; letter-spacing: .3px; text-transform: uppercase;
+    }
+    .broadcast-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .broadcast-field { display: flex; flex-direction: column; gap: 7px; }
+    .broadcast-field.full { grid-column: 1 / -1; }
+    .broadcast-field label { font-size: 12px; color: #cfcfcf; font-weight: 600; letter-spacing: .2px; }
+    .broadcast-field textarea { min-height: 92px; resize: vertical; }
+    .broadcast-preview {
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+      background: rgba(255,255,255,0.04); padding: 12px 14px; color: #d9d9d9;
+      font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+    }
+    .broadcast-list-wrap, .broadcast-export-wrap, .broadcast-live-wrap { margin-top: 6px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .broadcast-item {
+      display: flex; justify-content: space-between; gap: 12px; padding: 12px; border-radius: 16px;
+    }
+    .broadcast-item-meta { min-width: 0; flex: 1; }
+    .broadcast-item-title { font-size: 14px; font-weight: 700; line-height: 1.5; margin-bottom: 3px; }
+    .broadcast-item-sub { font-size: 12px; color: #c9c9c9; line-height: 1.6; }
+    .broadcast-item-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .broadcast-mini-btn.danger { border-color: rgba(255,106,106,0.28); color: #ffd6d6; background: rgba(255,106,106,0.1); }
+    .broadcast-toggle-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    }
+    .broadcast-toggle-label { display: flex; flex-direction: column; gap: 4px; }
+    .broadcast-toggle-label strong { font-size: 14px; line-height: 1.5; }
+    .broadcast-toggle-label span { font-size: 12px; color: #c9c9c9; line-height: 1.6; }
+    .broadcast-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .broadcast-switch input { display: none; }
+    .broadcast-switch-slider {
+      width: 52px; height: 30px; border-radius: 999px; position: relative;
+      background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.14); transition: .22s ease;
+    }
+    .broadcast-switch-slider::after {
+      content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+      background: #fff; transition: .22s ease;
+    }
+    .broadcast-switch input:checked + .broadcast-switch-slider {
+      background: rgba(255,95,95,0.35); border-color: rgba(255,95,95,0.4);
+    }
+    .broadcast-switch input:checked + .broadcast-switch-slider::after { transform: translateX(22px); }
+    .broadcast-switch-text { font-size: 12px; font-weight: 700; color: #ffd7d7; letter-spacing: .3px; }
+    .live-admin-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+    .live-admin-stat {
+      flex: 1 1 180px; padding: 12px 14px; border-radius: 14px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      color: #d9d9d9; line-height: 1.6; font-size: 13px;
+    }
+    .live-admin-stat strong {
+      display: block; font-size: 12px; color: #c9c9c9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .3px;
+    }
+    .collapsed #broadcastExportPreview { display: none; }
+
+    .marquee-title { display: block; width: 100%; overflow: hidden; white-space: nowrap; position: relative; }
+    .marquee-title .marquee-inner { display: inline-block; white-space: nowrap; min-width: max-content; }
+    .marquee-title.is-ready:hover .marquee-inner,
+    .marquee-title.is-playing.is-ready .marquee-inner {
+      animation: titleMarquee var(--marquee-duration, 8s) linear infinite alternate;
+    }
+    @keyframes titleMarquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(-1 * var(--marquee-distance, 0px))); }
+    }
+
+    #ytPlayerWrap, #livePlayerWrap {
+      width: 1px; height: 1px; opacity: .01; pointer-events: none; overflow: hidden;
+      position: fixed; right: 0; bottom: 0; z-index: -1;
+    }
+
+    @media (max-width: 520px) {
+      #podcastTool { right: 8px; top: 8px; width: calc(100vw - 16px); height: calc(100vh - 16px); border-radius: 18px; max-width: none; }
+      #podcastToolBtn { right: 76px; bottom: 8px; }
+      #broadcastToolBtn { left: 8px; bottom: 8px; }
+      #themeToggleBtn { right: 8px; bottom: 76px; }
+      .broadcast-grid { grid-template-columns: 1fr; }
+      .home-track-thumb { width: 60px; height: 60px; }
+      .track-thumb { width: 54px; height: 54px; }
+      #nowPlayingThumb { width: 64px; height: 64px; }
+      .floating-btn { bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="sitePreloader"><div class="preloader-mark"><i class="ri-mic-line"></i></div></div>
+
+  <div class="page-wrap">
+    <div id="liveBox">
+      <div class="live-card">
+        <div class="live-topline">
+          <div class="live-badge"><span class="live-dot"></span> LIVE WORSHIP</div>
+          <div class="live-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div id="liveTitle" class="live-title">Sunday Worship Live</div>
+        <div id="liveSpeaker" class="live-speaker">កំពុងផ្សាយបន្តផ្ទាល់</div>
+        <div class="live-meta">
+          <span id="liveMetaText"><i class="ri-broadcast-line"></i> កំពុងផ្សាយសម្រាប់សមាជិកដែលថ្វាយបង្គំពីផ្ទះ</span>
+          <span id="liveViewCount" class="live-view-count"><i class="ri-eye-line"></i> 0</span>
+        </div>
+        <button id="livePlayBtn" class="live-play-btn" type="button"><i class="ri-play-circle-fill"></i> ស្ដាប់ Live Now</button>
+      </div>
+    </div>
+
+    <h1><i class="ri-mic-line"></i> ព្រះបន្ទូលសប្ដាហ៍នេះ</h1>
+    <p class="subtext">ព្រះបន្ទូលថ្ងៃអាទិត្យចុងក្រោយ សម្រាប់ការស្តាប់ឡើងវិញ ការអនុវត្តន៍តាមព្រះបន្ទូល និងការលូតលាស់ខាងវិញ្ញាណ។</p>
+
+    <div class="home-latest-wrap">
+      <div class="section-title">ព្រះបន្ទូលថ្មីៗ</div>
+      <div id="latestTracks" class="latest-tracks"></div>
+      <button id="showMoreTracksBtn" class="glass-more-btn" type="button">បង្ហាញបន្ថែម</button>
+      <div id="homeAllTracksWrap" class="home-all-tracks-wrap" style="display:none;">
+        <div id="homeAllTracks" class="home-all-tracks"></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="podcastToolBtn" class="floating-btn" title="Open Podcast Playlist"><i class="ri-headphone-line"></i></button>
+  <button id="broadcastToolBtn" class="floating-btn" title="Open Broadcast Box"><i class="ri-keynote-line"></i></button>
+  <button id="themeToggleBtn" class="floating-btn" title="Switch Theme"><i class="ri-contrast-2-line"></i></button>
+
+  <div id="broadcastOverlay">
+    <div id="broadcastModal">
+      <div class="broadcast-header">
+        <div class="broadcast-title"><i class="ri-safe-2-line"></i><span>Broadcast Box</span></div>
+        <button id="broadcastCloseBtn" class="broadcast-close-btn" type="button"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="broadcast-body">
+        <p class="broadcast-help">Sign in with Firebase Auth, then manage YouTube-based sermon items and live worship data.</p>
+
+        <div id="broadcastAuthWrap" class="broadcast-auth">
+          <div class="broadcast-field full">
+            <label for="broadcastEmailInput"><i class="ri-mail-line"></i> Email</label>
+            <input id="broadcastEmailInput" type="email" placeholder="example@gmail.com">
+          </div>
+          <div class="broadcast-field full">
+            <label for="broadcastKeyInput"><i class="ri-key-2-line"></i> Password</label>
+            <input id="broadcastKeyInput" type="password" placeholder="Enter password">
+          </div>
+          <div><button id="broadcastUnlockBtn" class="broadcast-action-btn" type="button"><i class="ri-arrow-right-line"></i> Login</button></div>
+        </div>
+
+        <div id="broadcastPanel" class="broadcast-panel hidden">
+          <div class="broadcast-live-wrap">
+            <div class="broadcast-section-title">Live Worship Control</div>
+            <div class="broadcast-toggle-row">
+              <div class="broadcast-toggle-label">
+                <strong>Show Live Box On Homepage</strong>
+                <span>Only signed-in admin can turn live mode on or off.</span>
+              </div>
+              <label class="broadcast-switch" for="broadcastLiveEnabledInput">
+                <input id="broadcastLiveEnabledInput" type="checkbox">
+                <span class="broadcast-switch-slider"></span>
+                <span id="broadcastLiveEnabledText" class="broadcast-switch-text">OFF</span>
+              </label>
+            </div>
+            <div class="broadcast-grid">
+              <div class="broadcast-field full">
+                <label for="broadcastLiveTitleInput">Live Title</label>
+                <input id="broadcastLiveTitleInput" type="text" placeholder="Sunday Worship Live">
+              </div>
+              <div class="broadcast-field">
+                <label for="broadcastLiveSpeakerInput">Live Speaker</label>
+                <input id="broadcastLiveSpeakerInput" type="text" placeholder="Pastor name">
+              </div>
+              <div class="broadcast-field">
+                <label for="broadcastYoutubeIdInput">YouTube Video ID or Link</label>
+                <input id="broadcastYoutubeIdInput" type="text" placeholder="Paste YouTube video ID or full link">
+              </div>
+            </div>
+            <div class="broadcast-actions">
+              <button id="broadcastLoadLiveBtn" class="broadcast-action-btn" type="button">Load Live Data</button>
+              <button id="broadcastSaveLiveBtn" class="broadcast-action-btn" type="button">Save Live To Firebase</button>
+              <button id="broadcastClearLiveBtn" class="broadcast-action-btn" type="button">Clear Live Form</button>
+            </div>
+            <div id="broadcastLivePreview" class="broadcast-preview">{"isLive": false}</div>
+            <div class="live-admin-stats">
+              <div class="live-admin-stat"><strong>Watching Now</strong><span id="broadcastLiveWatchingNow">0</span></div>
+              <div class="live-admin-stat"><strong>Total Views</strong><span id="broadcastLiveTotalViews">0</span></div>
+            </div>
+          </div>
+
+          <div class="broadcast-section-title">Playlist Control</div>
+          <div class="broadcast-grid">
+            <div class="broadcast-field full">
+              <label for="broadcastTitleInput">Title</label>
+              <input id="broadcastTitleInput" type="text" placeholder="Message title">
+            </div>
+            <div class="broadcast-field">
+              <label for="broadcastPreacherInput">Preacher</label>
+              <input id="broadcastPreacherInput" type="text" placeholder="Pastor name">
+            </div>
+            <div class="broadcast-field">
+              <label for="broadcastDateInput">Date</label>
+              <input id="broadcastDateInput" type="date">
+            </div>
+            <div class="broadcast-field full">
+              <label for="broadcastSubtitleInput">Subtitle</label>
+              <input id="broadcastSubtitleInput" type="text" placeholder="Sunday Worship Sermon">
+            </div>
+            <div class="broadcast-field full">
+              <label for="broadcastVideoInput">YouTube Video ID or Link</label>
+              <input id="broadcastVideoInput" type="text" placeholder="Paste YouTube video ID or full link">
+            </div>
+            <div class="broadcast-field full">
+              <label for="broadcastNotesPreview">JSON Preview</label>
+              <div id="broadcastNotesPreview" class="broadcast-preview">{}</div>
+            </div>
+          </div>
+          <div class="broadcast-actions">
+            <button id="broadcastPreviewBtn" class="broadcast-action-btn" type="button">Refresh Preview</button>
+            <button id="broadcastResetBtn" class="broadcast-action-btn" type="button">Clear Form</button>
+            <button id="broadcastSaveBtn" class="broadcast-action-btn" type="button">Save To Firebase</button>
+            <button id="broadcastLogoutBtn" class="broadcast-action-btn" type="button"><i class="ri-lock-2-line"></i> Logout</button>
+          </div>
+
+          <div id="broadcastListWrap" class="broadcast-list-wrap">
+            <div class="broadcast-section-title">Existing Firebase Items</div>
+            <div id="broadcastList" class="broadcast-list"></div>
+          </div>
+
+          <div id="broadcastExportWrap" class="broadcast-export-wrap">
+            <div class="broadcast-section-title">Export Firebase JSON</div>
+            <div class="broadcast-actions">
+              <button id="broadcastExportBtn" class="broadcast-action-btn" type="button">Generate Export JSON</button>
+              <button id="broadcastCopyExportBtn" class="broadcast-action-btn" type="button">Copy Export JSON</button>
+              <button id="broadcastToggleExportBtn" class="broadcast-toggle-preview-btn" type="button">Hide JSON</button>
+            </div>
+            <div id="broadcastExportPreviewWrap" class="collapsed">
+              <div id="broadcastExportPreview" class="broadcast-preview">[]</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="broadcastStatus" class="broadcast-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="podcastTool">
+    <div class="header" id="podcastHeader">
+      <div class="header-title"><i class="ri-mic-line"></i><span>ស្ដាប់ព្រះបន្ទូល</span></div>
+      <div class="header-buttons">
+        <button id="refreshBtn" title="Reload playlist"><i class="ri-refresh-line"></i></button>
+        <button id="closeBtn" title="Close"><i class="ri-close-circle-line"></i></button>
+      </div>
+    </div>
+    <div class="content">
+      <input id="podcastSearch" type="text" placeholder="ស្វែងរកចំណងជើង ឬឈ្មោះអ្នកអធិប្បាយ..." />
+      <div id="nowPlayingCard">
+        <div id="nowPlayingThumb" class="thumb-placeholder"><i class="ri-equalizer-line"></i></div>
+        <div id="nowPlayingMeta">
+          <div id="nowPlayingLabel">NOW PLAYING</div>
+          <div id="nowPlayingTitle">មិនទាន់មានសំឡេងកំពុងចាក់</div>
+          <div id="nowPlayingSubtitle">សូមជ្រើសរើសព្រះបន្ទូលពីបញ្ជីខាងក្រោម</div>
+          <div id="nowPlayingExtra">---</div>
+          <div id="nowPlayingActions"></div>
+        </div>
+      </div>
+
+      <div id="glassPlayer">
+        <div id="playerControls">
+          <button class="player-btn" id="prevBtn" title="Previous"><i class="ri-skip-back-fill"></i></button>
+          <button class="player-btn" id="playPauseBtn" title="Play / Pause"><i class="ri-play-fill"></i></button>
+          <button class="player-btn" id="nextBtn" title="Next"><i class="ri-skip-forward-fill"></i></button>
+          <button class="player-btn" id="repeatBtn" title="Repeat"><i class="ri-repeat-line"></i></button>
+        </div>
+        <div id="timeBar"><div id="timeBarFill"></div></div>
+        <div id="timeLabels"><span id="currentTime">0:00</span><span id="durationTime">0:00</span></div>
+        <div id="playerStatus">កំពុងផ្ទុកបញ្ជីសំឡេង...</div>
+      </div>
+
+      <div id="playlistBox"></div>
+    </div>
+    <div id="podcastFooter">
+      <div class="footer-inline">
+        <span id="footerVisitorCount" class="footer-visitors"><i class="ri-eye-line"></i> 0 visitors</span>
+        <span class="dot">•</span><span>Developed by Thet.</span>
+        <span class="dot">•</span><span>©thythet.com</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="ytPlayerWrap"><div id="ytPlayer"></div></div>
+  <div id="livePlayerWrap"><div id="livePlayer"></div></div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, push, set, remove, runTransaction } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
+      authDomain: "thythet-podcast.firebaseapp.com",
+      databaseURL: "https://thythet-podcast-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thythet-podcast",
+      storageBucket: "thythet-podcast.firebasestorage.app",
+      messagingSenderId: "164940506015",
+      appId: "1:164940506015:web:3860e938d888f424b693aa",
+      measurementId: "G-GZRDKL1N0R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const THUMB_BASE = 'https://thythet.com/assets/audio/';
+    const PLAYLIST_PATH = 'playlistItems';
+    const LIVE_STREAM_PATH = 'liveStream';
+
+    const DEVICE_ID_KEY = 'worship_audio_platform_device_id';
+    const PLAYED_STORAGE_KEY = 'worship_audio_platform_played_v2';
+    const LIKED_STORAGE_KEY = 'worship_audio_platform_liked_v2';
+    const LIVE_VIEWED_STORAGE_KEY = 'worship_audio_platform_live_viewed_v2';
+    const THEME_STORAGE_KEY = 'worship_audio_platform_theme_v2';
+
+    function getDeviceId() {
+      let id = localStorage.getItem(DEVICE_ID_KEY);
+      if (!id) {
+        id = 'device_' + Math.random().toString(36).slice(2, 11);
+        localStorage.setItem(DEVICE_ID_KEY, id);
+      }
+      return id;
+    }
+
+    const DEVICE_ID = getDeviceId();
+    const sitePreloader = document.getElementById('sitePreloader');
+    const latestTracks = document.getElementById('latestTracks');
+    const showMoreTracksBtn = document.getElementById('showMoreTracksBtn');
+    const homeAllTracksWrap = document.getElementById('homeAllTracksWrap');
+    const homeAllTracks = document.getElementById('homeAllTracks');
+    const podcastToolBtn = document.getElementById('podcastToolBtn');
+    const broadcastToolBtn = document.getElementById('broadcastToolBtn');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const podcastTool = document.getElementById('podcastTool');
+    const podcastHeader = document.getElementById('podcastHeader');
+    const closeBtn = document.getElementById('closeBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const podcastSearch = document.getElementById('podcastSearch');
+    const nowPlayingThumb = document.getElementById('nowPlayingThumb');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingSubtitle = document.getElementById('nowPlayingSubtitle');
+    const nowPlayingExtra = document.getElementById('nowPlayingExtra');
+    const nowPlayingActions = document.getElementById('nowPlayingActions');
+    const playlistBox = document.getElementById('playlistBox');
+    const playerStatus = document.getElementById('playerStatus');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationTimeEl = document.getElementById('durationTime');
+    const timeBarFill = document.getElementById('timeBarFill');
+    const footerVisitorCount = document.getElementById('footerVisitorCount');
+
+    const liveBox = document.getElementById('liveBox');
+    const liveTitle = document.getElementById('liveTitle');
+    const liveSpeaker = document.getElementById('liveSpeaker');
+    const liveMetaText = document.getElementById('liveMetaText');
+    const liveViewCount = document.getElementById('liveViewCount');
+    const livePlayBtn = document.getElementById('livePlayBtn');
+
+    const broadcastOverlay = document.getElementById('broadcastOverlay');
+    const broadcastCloseBtn = document.getElementById('broadcastCloseBtn');
+    const broadcastAuthWrap = document.getElementById('broadcastAuthWrap');
+    const broadcastPanel = document.getElementById('broadcastPanel');
+    const broadcastEmailInput = document.getElementById('broadcastEmailInput');
+    const broadcastKeyInput = document.getElementById('broadcastKeyInput');
+    const broadcastUnlockBtn = document.getElementById('broadcastUnlockBtn');
+    const broadcastStatus = document.getElementById('broadcastStatus');
+
+    const broadcastTitleInput = document.getElementById('broadcastTitleInput');
+    const broadcastPreacherInput = document.getElementById('broadcastPreacherInput');
+    const broadcastDateInput = document.getElementById('broadcastDateInput');
+    const broadcastSubtitleInput = document.getElementById('broadcastSubtitleInput');
+    const broadcastVideoInput = document.getElementById('broadcastVideoInput');
+    const broadcastNotesPreview = document.getElementById('broadcastNotesPreview');
+    const broadcastPreviewBtn = document.getElementById('broadcastPreviewBtn');
+    const broadcastResetBtn = document.getElementById('broadcastResetBtn');
+    const broadcastSaveBtn = document.getElementById('broadcastSaveBtn');
+    const broadcastLogoutBtn = document.getElementById('broadcastLogoutBtn');
+    const broadcastList = document.getElementById('broadcastList');
+    const broadcastExportBtn = document.getElementById('broadcastExportBtn');
+    const broadcastCopyExportBtn = document.getElementById('broadcastCopyExportBtn');
+    const broadcastExportPreview = document.getElementById('broadcastExportPreview');
+    const broadcastToggleExportBtn = document.getElementById('broadcastToggleExportBtn');
+    const broadcastExportPreviewWrap = document.getElementById('broadcastExportPreviewWrap');
+
+    const broadcastLiveEnabledInput = document.getElementById('broadcastLiveEnabledInput');
+    const broadcastLiveEnabledText = document.getElementById('broadcastLiveEnabledText');
+    const broadcastLiveTitleInput = document.getElementById('broadcastLiveTitleInput');
+    const broadcastLiveSpeakerInput = document.getElementById('broadcastLiveSpeakerInput');
+    const broadcastYoutubeIdInput = document.getElementById('broadcastYoutubeIdInput');
+    const broadcastLoadLiveBtn = document.getElementById('broadcastLoadLiveBtn');
+    const broadcastSaveLiveBtn = document.getElementById('broadcastSaveLiveBtn');
+    const broadcastClearLiveBtn = document.getElementById('broadcastClearLiveBtn');
+    const broadcastLivePreview = document.getElementById('broadcastLivePreview');
+    const broadcastLiveWatchingNow = document.getElementById('broadcastLiveWatchingNow');
+    const broadcastLiveTotalViews = document.getElementById('broadcastLiveTotalViews');
+
+    let playlist = [];
+    let filteredPlaylist = [];
+    let playCounts = {};
+    let likeCounts = {};
+    let shareCounts = {};
+    let currentIndex = -1;
+    let repeatMode = 0;
+    let homeExpanded = false;
+    let liveStreamData = null;
+    let broadcastUserEmail = '';
+    let ytPlayer = null;
+    let livePlayer = null;
+    let youtubeApiReady = false;
+    let progressInterval = null;
+    let pendingTrackVideoId = '';
+    let pendingTrackAutoplay = false;
+    let pendingLiveVideoId = '';
+    let pendingLiveAutoplay = false;
+
+    function hidePreloader() {
+      const delay = 700;
+      setTimeout(() => {
+        document.body.classList.remove('preloading');
+        sitePreloader.classList.add('hidden');
+      }, delay);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function safeKey(value) {
+      return String(value || '').replace(/[.#$/[\]]/g, '_');
+    }
+
+    function normalizeYoutubeVideoId(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      const cleaned = raw.replace(/<[^>]*>/g, '').trim();
+      const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/live\/)([A-Za-z0-9_-]{6,})/i,
+        /(?:^|\s)([A-Za-z0-9_-]{11})(?:$|\s)/
+      ];
+      for (const pattern of patterns) {
+        const match = cleaned.match(pattern);
+        if (match && match[1]) return match[1];
+      }
+      return cleaned;
+    }
+
+    function isValidYoutubeVideoId(value) {
+      return /^[A-Za-z0-9_-]{11}$/.test(String(value || '').trim());
+    }
+
+    function getTrackKey(itemOrId) {
+      if (!itemOrId) return '';
+      if (typeof itemOrId === 'string') return normalizeYoutubeVideoId(itemOrId);
+      return normalizeYoutubeVideoId(itemOrId.videoId);
+    }
+
+    function getThumbUrl(videoId) {
+      return `${THUMB_BASE}${videoId}.jpg`;
+    }
+
+    function formatDate(value) {
+      if (!value) return '---';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
+    }
+
+    function getSafeDateValue(value) {
+      const t = new Date(value || 0).getTime();
+      return Number.isNaN(t) ? 0 : t;
+    }
+
+    function formatTime(seconds) {
+      const s = Math.max(0, Math.floor(Number(seconds || 0)));
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${mins}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function getPlayedMap() {
+      try { return JSON.parse(localStorage.getItem(PLAYED_STORAGE_KEY)) || {}; }
+      catch { return {}; }
+    }
+    function hasTrackBeenCounted(videoId) {
+      const map = getPlayedMap();
+      return !!map[getTrackKey(videoId)];
+    }
+    function markTrackAsCounted(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      const map = getPlayedMap();
+      map[key] = true;
+      localStorage.setItem(PLAYED_STORAGE_KEY, JSON.stringify(map));
+    }
+    function resetLocalPlayedTrack(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      const map = getPlayedMap();
+      delete map[key];
+      localStorage.setItem(PLAYED_STORAGE_KEY, JSON.stringify(map));
+    }
+
+    function getLikedMap() {
+      try { return JSON.parse(localStorage.getItem(LIKED_STORAGE_KEY)) || {}; }
+      catch { return {}; }
+    }
+    function isTrackLiked(videoId) {
+      const liked = getLikedMap();
+      return !!liked[getTrackKey(videoId)];
+    }
+    function setTrackLiked(videoId, value) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      const liked = getLikedMap();
+      if (value) liked[key] = true;
+      else delete liked[key];
+      localStorage.setItem(LIKED_STORAGE_KEY, JSON.stringify(liked));
+    }
+
+    function getLiveViewedMap() {
+      try { return JSON.parse(localStorage.getItem(LIVE_VIEWED_STORAGE_KEY)) || {}; }
+      catch { return {}; }
+    }
+    function hasCountedLiveView(videoId) {
+      const viewed = getLiveViewedMap();
+      return !!viewed[getTrackKey(videoId)];
+    }
+    function markLiveViewCounted(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      const viewed = getLiveViewedMap();
+      viewed[key] = true;
+      localStorage.setItem(LIVE_VIEWED_STORAGE_KEY, JSON.stringify(viewed));
+    }
+
+    function setBroadcastStatus(message) {
+      broadcastStatus.textContent = message || '';
+    }
+
+    function setPlayerStatus(message) {
+      playerStatus.textContent = message || '';
+    }
+
+    function trackVisitor() {
+      const visitorRef = ref(db, `visitors/${DEVICE_ID}`);
+      runTransaction(visitorRef, val => val === true ? true : true);
+    }
+
+    function listenVisitorCount() {
+      onValue(ref(db, 'visitors'), snap => {
+        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+        footerVisitorCount.innerHTML = `<i class="ri-eye-line"></i> ${count} visitors`;
+      });
+    }
+
+    function getPlayCount(videoId) {
+      return Number(playCounts[safeKey(getTrackKey(videoId))] || 0);
+    }
+    function getLikeCount(videoId) {
+      return Number(likeCounts[safeKey(getTrackKey(videoId))] || 0);
+    }
+    function getShareCount(videoId) {
+      return Number(shareCounts[safeKey(getTrackKey(videoId))] || 0);
+    }
+
+    function getCountHtml(videoId) {
+      return `<span class="count-badge"><i class="ri-eye-line"></i> ${getPlayCount(videoId)}</span>`;
+    }
+    function getLikeHtml(videoId) {
+      return `<span class="like-count"><i class="ri-thumb-up-line"></i> ${getLikeCount(videoId)}</span>`;
+    }
+    function getShareHtml(videoId) {
+      return `<button class="share-track-btn" data-share-id="${escapeHtml(getTrackKey(videoId))}" type="button"><i class="ri-share-forward-line"></i> ${getShareCount(videoId)}</button>`;
+    }
+
+    function listenToPlayCounts() {
+      onValue(ref(db, 'playCounts'), snapshot => {
+        playCounts = snapshot.exists() ? snapshot.val() : {};
+        playlist.forEach(item => {
+          const key = safeKey(getTrackKey(item));
+          if (Number(playCounts[key] || 0) === 0) resetLocalPlayedTrack(item.videoId);
+        });
+        renderAll();
+      });
+    }
+
+    function listenToLikeCounts() {
+      onValue(ref(db, 'likeCounts'), snapshot => {
+        likeCounts = snapshot.exists() ? snapshot.val() : {};
+        renderAll();
+      });
+    }
+
+    function listenToShareCounts() {
+      onValue(ref(db, 'shareCounts'), snapshot => {
+        shareCounts = snapshot.exists() ? snapshot.val() : {};
+        renderAll();
+      });
+    }
+
+    async function increasePlayCount(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key || hasTrackBeenCounted(key)) return;
+      try {
+        await runTransaction(ref(db, 'playCounts/' + safeKey(key)), current => (current || 0) + 1);
+        markTrackAsCounted(key);
+      } catch (err) {
+        console.error('Count update failed:', err);
+      }
+    }
+
+    async function toggleLike(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      const likedNow = isTrackLiked(key);
+      try {
+        await runTransaction(ref(db, 'likeCounts/' + safeKey(key)), currentValue => {
+          const current = currentValue || 0;
+          return likedNow ? Math.max(0, current - 1) : current + 1;
+        });
+        setTrackLiked(key, !likedNow);
+        renderAll();
+      } catch (err) {
+        console.error('Like update failed:', err);
+      }
+    }
+
+    async function shareTrack(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      const trackUrl = `${location.origin}${location.pathname}?t=${encodeURIComponent(key)}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'Worship Audio', url: trackUrl });
+        } else {
+          await navigator.clipboard.writeText(trackUrl);
+          setPlayerStatus('Track link copied.');
+        }
+        await runTransaction(ref(db, 'shareCounts/' + safeKey(key)), val => (val || 0) + 1);
+      } catch (err) {
+        if (String(err).includes('AbortError')) return;
+        console.error('Share failed:', err);
+      }
+    }
+
+    function attachShareButtonHandlers(root) {
+      root.querySelectorAll('[data-share-id]').forEach(btn => {
+        btn.addEventListener('click', ev => {
+          ev.stopPropagation();
+          shareTrack(btn.getAttribute('data-share-id'));
+        });
+      });
+    }
+
+    function attachTrackPlaceholder(card, selector, holderClass) {
+      const img = card.querySelector(selector);
+      if (!img) return;
+      img.onerror = function () {
+        const holder = document.createElement('div');
+        holder.className = `${holderClass} placeholder-thumb`;
+        holder.innerHTML = '<i class="ri-voiceprint-line"></i>';
+        this.replaceWith(holder);
+      };
+    }
+
+    function getLatestThreeTracks() {
+      return [...playlist].sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date)).slice(0, 3);
+    }
+
+    function normalizeTrack(item, key='') {
+      const videoId = getTrackKey(item.videoId || item.file || '');
+      return {
+        key,
+        title: String(item.title || '').trim() || 'Untitled message',
+        preacher: String(item.preacher || '').trim() || 'Unknown preacher',
+        subtitle: String(item.subtitle || '').trim() || 'Sunday Worship Sermon',
+        date: item.date || '',
+        videoId,
+        thumb: getThumbUrl(videoId)
+      };
+    }
+
+    function renderLatestTracks() {
+      latestTracks.innerHTML = '';
+      const latest = getLatestThreeTracks();
+      if (!latest.length) {
+        latestTracks.innerHTML = '<div class="empty-text">មិនទាន់មានព្រះបន្ទូលថ្មីៗទេ។</div>';
+        return;
+      }
+      latest.forEach(item => {
+        const realIndex = playlist.findIndex(p => p.videoId === item.videoId);
+        const card = document.createElement('div');
+        card.className = 'home-track-card';
+        card.innerHTML = `
+          <img class="home-track-thumb" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">
+          <div class="home-track-meta">
+            <div class="home-track-title marquee-title"><span class="marquee-inner">${escapeHtml(item.title)}</span></div>
+            <div class="home-track-subtitle">${escapeHtml(item.preacher)} • ${escapeHtml(item.subtitle)}</div>
+            <div class="home-track-date">
+              <span>${escapeHtml(formatDate(item.date))}</span>
+              ${getCountHtml(item.videoId)}
+              ${getLikeHtml(item.videoId)}
+              ${getShareHtml(item.videoId)}
+            </div>
+          </div>
+          <div class="home-track-play"><i class="ri-play-fill"></i></div>
+        `;
+        card.addEventListener('click', () => {
+          playTrack(realIndex, true);
+          togglePodcastTool(true);
+        });
+        latestTracks.appendChild(card);
+        attachTrackPlaceholder(card, '.home-track-thumb', 'home-track-thumb');
+        attachShareButtonHandlers(card);
+      });
+      refreshTitleMarquees();
+    }
+
+    function renderHomeAllTracks() {
+      homeAllTracks.innerHTML = '';
+      if (!playlist.length) {
+        homeAllTracks.innerHTML = '<div class="empty-text">មិនទាន់មានព្រះបន្ទូលទេ។</div>';
+        return;
+      }
+      [...playlist].sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date)).forEach(item => {
+        const realIndex = playlist.findIndex(p => p.videoId === item.videoId);
+        const card = document.createElement('div');
+        card.className = 'home-all-track-card';
+        card.innerHTML = `
+          <img class="home-all-track-thumb" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">
+          <div class="home-all-track-meta">
+            <div class="home-all-track-title marquee-title"><span class="marquee-inner">${escapeHtml(item.title)}</span></div>
+            <div class="home-all-track-subtitle">${escapeHtml(item.preacher)}</div>
+            <div class="home-all-track-date">
+              <span>${escapeHtml(formatDate(item.date))}</span>
+              ${getCountHtml(item.videoId)}
+            </div>
+          </div>
+          <div class="home-all-track-play"><i class="ri-play-fill"></i></div>
+        `;
+        card.addEventListener('click', () => {
+          playTrack(realIndex, true);
+          togglePodcastTool(true);
+        });
+        homeAllTracks.appendChild(card);
+        attachTrackPlaceholder(card, '.home-all-track-thumb', 'home-all-track-thumb');
+      });
+      refreshTitleMarquees();
+    }
+
+    function renderPlaylist() {
+      playlistBox.innerHTML = '';
+      if (!filteredPlaylist.length) {
+        playlistBox.innerHTML = '<div class="empty-text">រកមិនឃើញព្រះបន្ទូលដែលត្រូវគ្នាទេ។</div>';
+        return;
+      }
+      filteredPlaylist.forEach(item => {
+        const realIndex = playlist.findIndex(p => p.videoId === item.videoId);
+        const active = currentIndex === realIndex ? ' active' : '';
+        const card = document.createElement('div');
+        card.className = `track-card${active}`;
+        card.innerHTML = `
+          <img class="track-thumb" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">
+          <div class="track-meta">
+            <div class="track-title marquee-title ${active ? 'is-playing' : ''}"><span class="marquee-inner">${escapeHtml(item.title)}</span></div>
+            <div class="track-preacher">${escapeHtml(item.preacher)}</div>
+            <div class="track-subtitle">${escapeHtml(item.subtitle)}</div>
+            <div class="track-date">
+              <span>${escapeHtml(formatDate(item.date))}</span>
+              ${getCountHtml(item.videoId)}
+              ${getLikeHtml(item.videoId)}
+              ${getShareHtml(item.videoId)}
+            </div>
+          </div>
+          <div class="track-play"><i class="ri-${active ? 'pause' : 'play'}-fill"></i></div>
+        `;
+        card.addEventListener('click', () => playTrack(realIndex, true));
+        playlistBox.appendChild(card);
+        attachTrackPlaceholder(card, '.track-thumb', 'track-thumb');
+        attachShareButtonHandlers(card);
+      });
+      refreshTitleMarquees();
+    }
+
+    function updateNowPlaying(item) {
+      if (!item) {
+        nowPlayingThumb.className = 'thumb-placeholder';
+        nowPlayingThumb.innerHTML = '<i class="ri-equalizer-line"></i>';
+        nowPlayingTitle.textContent = 'មិនទាន់មានសំឡេងកំពុងចាក់';
+        nowPlayingSubtitle.textContent = 'សូមជ្រើសរើសព្រះបន្ទូលពីបញ្ជីខាងក្រោម';
+        nowPlayingExtra.textContent = '---';
+        nowPlayingActions.innerHTML = '';
+        return;
+      }
+      nowPlayingThumb.className = '';
+      nowPlayingThumb.innerHTML = `<img src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">`;
+      nowPlayingThumb.querySelector('img').onerror = () => {
+        nowPlayingThumb.className = 'thumb-placeholder';
+        nowPlayingThumb.innerHTML = '<i class="ri-voiceprint-line"></i>';
+      };
+      nowPlayingTitle.textContent = item.title;
+      nowPlayingSubtitle.textContent = `${item.preacher} • ${item.subtitle}`;
+      nowPlayingExtra.innerHTML = `
+        <span>${escapeHtml(formatDate(item.date))}</span>
+        ${getCountHtml(item.videoId)}
+        ${getLikeHtml(item.videoId)}
+      `;
+      nowPlayingActions.innerHTML = `
+        <button class="like-btn ${isTrackLiked(item.videoId) ? 'liked' : ''}" id="nowPlayingLikeBtn" type="button">
+          <i class="ri-heart-${isTrackLiked(item.videoId) ? 'fill' : 'line'}"></i>
+        </button>
+        ${getShareHtml(item.videoId)}
+      `;
+      document.getElementById('nowPlayingLikeBtn')?.addEventListener('click', ev => {
+        ev.stopPropagation();
+        toggleLike(item.videoId);
+      });
+      attachShareButtonHandlers(nowPlayingActions);
+    }
+
+    function refreshTitleMarquees() {
+      document.querySelectorAll('.marquee-title').forEach(el => {
+        const inner = el.querySelector('.marquee-inner');
+        if (!inner) return;
+        requestAnimationFrame(() => {
+          const distance = Math.max(0, inner.scrollWidth - el.clientWidth);
+          if (distance > 8) {
+            el.classList.add('is-ready');
+            el.style.setProperty('--marquee-distance', `${distance}px`);
+            el.style.setProperty('--marquee-duration', `${Math.max(6, distance / 22)}s`);
+          } else {
+            el.classList.remove('is-ready');
+            el.style.removeProperty('--marquee-distance');
+            el.style.removeProperty('--marquee-duration');
+          }
+        });
+      });
+    }
+
+    function applySearch() {
+      const q = podcastSearch.value.trim().toLowerCase();
+      filteredPlaylist = !q ? [...playlist] : playlist.filter(item =>
+        [item.title, item.preacher, item.subtitle, item.date, item.videoId].some(v => String(v || '').toLowerCase().includes(q))
+      );
+      renderPlaylist();
+    }
+
+    function togglePodcastTool(forceOpen = null) {
+      const shouldOpen = forceOpen === null ? podcastTool.style.display !== 'flex' : !!forceOpen;
+      podcastTool.style.display = shouldOpen ? 'flex' : 'none';
+    }
+
+    function applyTheme(saved) {
+      const theme = saved || localStorage.getItem(THEME_STORAGE_KEY) || '';
+      document.body.classList.toggle('theme-gray', theme === 'gray');
+    }
+
+    function toggleTheme() {
+      const next = document.body.classList.contains('theme-gray') ? '' : 'gray';
+      if (next) localStorage.setItem(THEME_STORAGE_KEY, next);
+      else localStorage.removeItem(THEME_STORAGE_KEY);
+      applyTheme(next);
+    }
+
+    function updateRepeatUi() {
+      repeatBtn.classList.toggle('active', repeatMode !== 0);
+      repeatBtn.innerHTML = `<i class="ri-${repeatMode === 2 ? 'repeat-one-line' : 'repeat-line'}"></i>`;
+    }
+
+    function updatePlayPauseUi(isPlaying) {
+      playPauseBtn.innerHTML = `<i class="ri-${isPlaying ? 'pause' : 'play'}-fill"></i>`;
+    }
+
+    function clearProgress() {
+      if (progressInterval) clearInterval(progressInterval);
+      progressInterval = null;
+      currentTimeEl.textContent = '0:00';
+      durationTimeEl.textContent = '0:00';
+      timeBarFill.style.width = '0%';
+    }
+
+    function updateProgressFromPlayer() {
+      if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+      try {
+        const current = Number(ytPlayer.getCurrentTime() || 0);
+        const duration = Number(ytPlayer.getDuration() || 0);
+        currentTimeEl.textContent = formatTime(current);
+        durationTimeEl.textContent = formatTime(duration);
+        timeBarFill.style.width = duration > 0 ? `${Math.min(100, (current / duration) * 100)}%` : '0%';
+
+        const state = ytPlayer.getPlayerState?.();
+        updatePlayPauseUi(state === window.YT?.PlayerState?.PLAYING);
+
+        if (state === window.YT?.PlayerState?.ENDED) {
+          handleTrackEnded();
+        }
+      } catch (err) {}
+    }
+
+    function startProgressLoop() {
+      clearProgress();
+      progressInterval = setInterval(updateProgressFromPlayer, 500);
+    }
+
+    function createOrLoadTrackPlayer(videoId, autoplay = false) {
+      const normalized = getTrackKey(videoId);
+      if (!normalized) return;
+
+      if (!youtubeApiReady || !window.YT?.Player) {
+        pendingTrackVideoId = normalized;
+        pendingTrackAutoplay = autoplay;
+        setPlayerStatus('Loading YouTube player...');
+        return;
+      }
+
+      if (!ytPlayer) {
+        ytPlayer = new window.YT.Player('ytPlayer', {
+          height: '200',
+          width: '220',
+          videoId: normalized,
+          playerVars: {
+            autoplay: autoplay ? 1 : 0,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1
+          },
+          events: {
+            onReady: event => {
+              try { event.target.setVolume(100); } catch(e) {}
+              if (autoplay) { try { event.target.playVideo(); } catch(e) {} }
+              setPlayerStatus('Ready. Tap play if it does not start automatically.');
+              startProgressLoop();
+            },
+            onError: event => {
+              const code = event?.data;
+              setPlayerStatus(`Could not play this YouTube source. Check the video ID or YouTube permissions. (Error ${code || 'unknown'})`);
+              updatePlayPauseUi(false);
+            },
+            onStateChange: event => {
+              const state = event.data;
+              if (state === window.YT.PlayerState.PLAYING) {
+                updatePlayPauseUi(true);
+                setPlayerStatus('កំពុងចាក់ពី YouTube...');
+                startProgressLoop();
+                const current = playlist[currentIndex];
+                if (current) increasePlayCount(current.videoId);
+              } else if (state === window.YT.PlayerState.PAUSED) {
+                updatePlayPauseUi(false);
+                setPlayerStatus('Paused.');
+              } else if (state === window.YT.PlayerState.BUFFERING) {
+                setPlayerStatus('Buffering...');
+              } else if (state === window.YT.PlayerState.ENDED) {
+                handleTrackEnded();
+              }
+            }
+          }
+        });
+      } else {
+        ytPlayer.loadVideoById(normalized);
+        if (!autoplay) ytPlayer.pauseVideo();
+        setPlayerStatus('កំពុងផ្ទុកវីដេអូពី YouTube...');
+        startProgressLoop();
+      }
+    }
+
+    function handleTrackEnded() {
+      if (repeatMode === 2) {
+        playTrack(currentIndex, true);
+      } else if (repeatMode === 1) {
+        playTrack((currentIndex + 1) % playlist.length, true);
+      } else {
+        updatePlayPauseUi(false);
+        setPlayerStatus('Playback finished.');
+      }
+    }
+
+    function playTrack(index, autoplay = true) {
+      if (index < 0 || index >= playlist.length) return;
+      currentIndex = index;
+      const item = playlist[index];
+      updateNowPlaying(item);
+      createOrLoadTrackPlayer(item.videoId, autoplay);
+      renderPlaylist();
+      renderLatestTracks();
+      renderHomeAllTracks();
+    }
+
+    function playCurrent() {
+      if (currentIndex < 0 && playlist.length) {
+        playTrack(0, true);
+        return;
+      }
+      if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
+    }
+
+    function pauseCurrent() {
+      if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+    }
+
+    function playNext() {
+      if (!playlist.length) return;
+      const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % playlist.length;
+      playTrack(nextIndex, true);
+    }
+
+    function playPrev() {
+      if (!playlist.length) return;
+      const prevIndex = currentIndex < 0 ? 0 : (currentIndex - 1 + playlist.length) % playlist.length;
+      playTrack(prevIndex, true);
+    }
+
+    function buildTrackPayload() {
+      return {
+        title: broadcastTitleInput.value.trim(),
+        preacher: broadcastPreacherInput.value.trim(),
+        subtitle: broadcastSubtitleInput.value.trim() || 'Sunday Worship Sermon',
+        date: broadcastDateInput.value,
+        videoId: normalizeYoutubeVideoId(broadcastVideoInput.value),
+        updatedAt: Date.now(),
+        updatedBy: broadcastUserEmail || ''
+      };
+    }
+
+    function updateTrackPreview() {
+      broadcastNotesPreview.textContent = JSON.stringify(buildTrackPayload(), null, 2);
+    }
+
+    function clearTrackForm() {
+      editingTrackKey = '';
+      broadcastTitleInput.value = '';
+      broadcastPreacherInput.value = '';
+      broadcastSubtitleInput.value = '';
+      broadcastDateInput.value = '';
+      broadcastVideoInput.value = '';
+      broadcastSaveBtn.innerHTML = 'Save To Firebase';
+      updateTrackPreview();
+    }
+
+    function loadTrackIntoForm(item) {
+      if (!item) return;
+      editingTrackKey = item.key || '';
+      broadcastTitleInput.value = item.title || '';
+      broadcastPreacherInput.value = item.preacher || '';
+      broadcastSubtitleInput.value = item.subtitle || '';
+      broadcastDateInput.value = item.date || '';
+      broadcastVideoInput.value = item.videoId || '';
+      broadcastSaveBtn.innerHTML = 'Update Track';
+      updateTrackPreview();
+      broadcastTitleInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setBroadcastStatus(`Editing: ${item.title || 'track'}`);
+    }
+
+    function getLiveStreamPayload() {
+      return {
+        isLive: !!broadcastLiveEnabledInput.checked,
+        title: broadcastLiveTitleInput.value.trim() || 'Sunday Worship Live',
+        speaker: broadcastLiveSpeakerInput.value.trim(),
+        videoId: normalizeYoutubeVideoId(broadcastYoutubeIdInput.value),
+        updatedAt: Date.now(),
+        updatedBy: broadcastUserEmail || ''
+      };
+    }
+
+    function updateLivePreview() {
+      const payload = getLiveStreamPayload();
+      broadcastLivePreview.textContent = JSON.stringify(payload, null, 2);
+      broadcastLiveEnabledText.textContent = payload.isLive ? 'ON' : 'OFF';
+    }
+
+    function fillLiveForm(data) {
+      const payload = data || { isLive: false, title: '', speaker: '', videoId: '' };
+      broadcastLiveEnabledInput.checked = !!payload.isLive;
+      broadcastLiveTitleInput.value = payload.title || '';
+      broadcastLiveSpeakerInput.value = payload.speaker || '';
+      broadcastYoutubeIdInput.value = payload.videoId || '';
+      updateLivePreview();
+    }
+
+    function clearLiveForm() {
+      fillLiveForm({ isLive: false, title: '', speaker: '', videoId: '' });
+    }
+
+    function updateLiveBoxStateClass(isLive) {
+      liveBox.classList.toggle('live-status-offline', !isLive);
+    }
+
+    function setPublicWatchingNowDisplay(count) {
+      const num = Number(count || 0);
+      liveViewCount.innerHTML = `<i class="ri-eye-line"></i> ${num}`;
+      broadcastLiveWatchingNow.textContent = String(num);
+    }
+
+    function setAdminTotalViewsDisplay(count) {
+      broadcastLiveTotalViews.textContent = String(Number(count || 0));
+    }
+
+    async function registerLiveView(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key || hasCountedLiveView(key)) return;
+      try {
+        await runTransaction(ref(db, 'liveViews/' + safeKey(key) + '/count'), current => Number(current || 0) + 1);
+        markLiveViewCounted(key);
+      } catch (error) {
+        console.error('Live view count failed:', error);
+      }
+    }
+
+    async function registerLiveWatcher(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      try {
+        await set(ref(db, 'liveWatchers/' + safeKey(key) + '/' + DEVICE_ID), { at: Date.now(), deviceId: DEVICE_ID });
+      } catch (error) {
+        console.error('Live watcher register failed:', error);
+      }
+    }
+
+    async function removeLiveWatcher(videoId) {
+      const key = getTrackKey(videoId);
+      if (!key) return;
+      try {
+        await remove(ref(db, 'liveWatchers/' + safeKey(key) + '/' + DEVICE_ID));
+      } catch (error) {
+        console.error('Live watcher remove failed:', error);
+      }
+    }
+
+    function listenToLiveCounters(videoId) {
+      const key = safeKey(getTrackKey(videoId));
+      if (!key) {
+        setPublicWatchingNowDisplay(0);
+        setAdminTotalViewsDisplay(0);
+        return;
+      }
+      onValue(ref(db, 'liveWatchers/' + key), snapshot => {
+        const data = snapshot.val() || {};
+        setPublicWatchingNowDisplay(Object.keys(data).length);
+      }, () => setPublicWatchingNowDisplay(0));
+
+      onValue(ref(db, 'liveViews/' + key + '/count'), snapshot => {
+        setAdminTotalViewsDisplay(snapshot.val() || 0);
+      }, () => setAdminTotalViewsDisplay(0));
+    }
+
+    function renderLiveBox(data) {
+      const payload = data || {};
+      const isLive = !!payload.isLive && !!payload.videoId;
+      liveStreamData = payload;
+      liveBox.style.display = 'block';
+      updateLiveBoxStateClass(isLive);
+      liveTitle.textContent = payload.title || 'Sunday Worship Live';
+      liveSpeaker.textContent = payload.speaker || (isLive ? 'កំពុងផ្សាយបន្តផ្ទាល់' : 'មិនទាន់មានការផ្សាយផ្ទាល់');
+      liveMetaText.innerHTML = isLive
+        ? '<i class="ri-broadcast-line"></i> កំពុងផ្សាយសម្រាប់សមាជិកដែលថ្វាយបង្គំពីផ្ទះ'
+        : '<i class="ri-information-line"></i> Live មិនទាន់បានបើកនៅឡើយ';
+      livePlayBtn.disabled = !isLive;
+      livePlayBtn.innerHTML = isLive
+        ? '<i class="ri-play-circle-fill"></i> ស្ដាប់ Live Now'
+        : '<i class="ri-close-circle-line"></i> Live Offline';
+      listenToLiveCounters(payload.videoId || '');
+    }
+
+    function createOrLoadLivePlayer(videoId, autoplay = false) {
+      const normalized = getTrackKey(videoId);
+      if (!normalized) return;
+
+      if (!youtubeApiReady || !window.YT?.Player) {
+        pendingLiveVideoId = normalized;
+        pendingLiveAutoplay = autoplay;
+        return;
+      }
+
+      if (!livePlayer) {
+        livePlayer = new window.YT.Player('livePlayer', {
+          height: '200',
+          width: '220',
+          videoId: normalized,
+          playerVars: {
+            autoplay: autoplay ? 1 : 0,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1
+          },
+          events: {
+            onReady: event => {
+              try { event.target.setVolume(100); } catch(e) {}
+              if (autoplay) { try { event.target.playVideo(); } catch(e) {} }
+            }
+          }
+        });
+      } else {
+        livePlayer.loadVideoById(normalized);
+        if (!autoplay) livePlayer.pauseVideo();
+      }
+    }
+
+    function openBroadcastBox() {
+      broadcastOverlay.classList.add('open');
+    }
+    function closeBroadcastBox() {
+      broadcastOverlay.classList.remove('open');
+    }
+
+    function updateBroadcastAccessUi(isSignedIn = !!auth.currentUser) {
+      broadcastAuthWrap.classList.toggle('hidden', isSignedIn);
+      broadcastPanel.classList.toggle('hidden', !isSignedIn);
+    }
+
+    async function saveTrackRecord() {
+      const payload = buildTrackPayload();
+      if (!auth.currentUser) {
+        setBroadcastStatus('Please log in first.');
+        return;
+      }
+      if (!payload.title || !payload.videoId || !payload.date) {
+        setBroadcastStatus('Please fill Title, Date, and YouTube Video ID.');
+        return;
+      }
+      if (!isValidYoutubeVideoId(payload.videoId)) {
+        setBroadcastStatus('Please use a valid 11-character YouTube video ID or a normal YouTube link.');
+        return;
+      }
+      broadcastSaveBtn.disabled = true;
+      setBroadcastStatus(editingTrackKey ? 'Updating track in Firebase...' : 'Saving track to Firebase...');
+      try {
+        if (editingTrackKey) {
+          await set(ref(db, `${PLAYLIST_PATH}/${editingTrackKey}`), payload);
+          setBroadcastStatus('Track updated successfully.');
+        } else {
+          await push(ref(db, PLAYLIST_PATH), payload);
+          setBroadcastStatus('Track saved successfully.');
+        }
+        clearTrackForm();
+      } catch (error) {
+        console.error(error);
+        setBroadcastStatus('Could not save track. Check Firebase rules.');
+      } finally {
+        broadcastSaveBtn.disabled = false;
+      }
+    }
+
+    async function deleteTrackRecord(key) {
+      if (!auth.currentUser || !key) return;
+      try {
+        await remove(ref(db, `${PLAYLIST_PATH}/${key}`));
+        setBroadcastStatus('Track deleted.');
+      } catch (error) {
+        console.error(error);
+        setBroadcastStatus('Delete failed.');
+      }
+    }
+
+    async function saveLiveStreamRecord() {
+      const payload = getLiveStreamPayload();
+      if (!auth.currentUser) {
+        setBroadcastStatus('Please log in first.');
+        return;
+      }
+      if (payload.isLive && !payload.videoId) {
+        setBroadcastStatus('Please paste a YouTube video ID or link for live mode.');
+        return;
+      }
+      if (payload.isLive && !isValidYoutubeVideoId(payload.videoId)) {
+        setBroadcastStatus('Live mode needs a valid 11-character YouTube video ID or link.');
+        return;
+      }
+      broadcastSaveLiveBtn.disabled = true;
+      setBroadcastStatus('Saving live data to Firebase...');
+      try {
+        await set(ref(db, LIVE_STREAM_PATH), payload);
+        fillLiveForm(payload);
+        renderLiveBox(payload);
+        setBroadcastStatus('Live stream data saved successfully.');
+      } catch (error) {
+        console.error(error);
+        setBroadcastStatus('Could not save live data. Check Firebase rules.');
+      } finally {
+        broadcastSaveLiveBtn.disabled = false;
+      }
+    }
+
+    function renderBroadcastList() {
+      broadcastList.innerHTML = '';
+      if (!playlist.length) {
+        broadcastList.innerHTML = '<div class="empty-text">No sermon items found in Firebase.</div>';
+        return;
+      }
+      [...playlist].sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date)).forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'broadcast-item';
+        row.innerHTML = `
+          <div class="broadcast-item-meta">
+            <div class="broadcast-item-title">${escapeHtml(item.title)}</div>
+            <div class="broadcast-item-sub">${escapeHtml(item.preacher)} • ${escapeHtml(item.subtitle)} • ${escapeHtml(formatDate(item.date))}<br>${escapeHtml(item.videoId)}</div>
+          </div>
+          <div class="broadcast-item-actions">
+            <button class="broadcast-mini-btn edit-btn" type="button">Edit</button>
+            <button class="broadcast-mini-btn danger delete-btn" type="button">Delete</button>
+          </div>
+        `;
+        row.querySelector('.edit-btn').addEventListener('click', () => loadTrackIntoForm(item));
+        row.querySelector('.delete-btn').addEventListener('click', () => {
+          if (confirm(`Delete "${item.title}" ?`)) deleteTrackRecord(item.key);
+        });
+        broadcastList.appendChild(row);
+      });
+    }
+
+    function generateExportJson() {
+      const exportData = [...playlist]
+        .sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date))
+        .map(({ title, preacher, subtitle, date, videoId }) => ({ title, preacher, subtitle, date, videoId }));
+      broadcastExportPreview.textContent = JSON.stringify(exportData, null, 2);
+    }
+
+    async function copyExportJson() {
+      try {
+        await navigator.clipboard.writeText(broadcastExportPreview.textContent || '[]');
+        setBroadcastStatus('Export JSON copied.');
+      } catch (error) {
+        setBroadcastStatus('Could not copy JSON.');
+      }
+    }
+
+    function renderAll() {
+      renderLatestTracks();
+      renderHomeAllTracks();
+      renderPlaylist();
+      renderBroadcastList();
+      if (currentIndex >= 0 && playlist[currentIndex]) updateNowPlaying(playlist[currentIndex]);
+      else updateNowPlaying(null);
+    }
+
+    function listenPlaylist() {
+      onValue(ref(db, PLAYLIST_PATH), snapshot => {
+        const data = snapshot.val() || {};
+        playlist = Object.entries(data)
+          .map(([key, item]) => normalizeTrack(item, key))
+          .filter(item => item.videoId);
+        filteredPlaylist = [...playlist];
+        applySearch();
+        renderAll();
+        if (playlist.length && currentIndex < 0) setPlayerStatus('Select a sermon to play from YouTube.');
+        else if (!playlist.length) setPlayerStatus('No sermon items found yet.');
+      });
+    }
+
+    function listenLiveStream() {
+      onValue(ref(db, LIVE_STREAM_PATH), snapshot => {
+        const payload = snapshot.val() || { isLive: false, title: '', speaker: '', videoId: '' };
+        renderLiveBox(payload);
+        fillLiveForm(payload);
+      });
+    }
+
+    window.onYouTubeIframeAPIReady = function () {
+      youtubeApiReady = true;
+      if (pendingTrackVideoId) {
+        const id = pendingTrackVideoId;
+        const autoplay = pendingTrackAutoplay;
+        pendingTrackVideoId = '';
+        pendingTrackAutoplay = false;
+        createOrLoadTrackPlayer(id, autoplay);
+      }
+      if (pendingLiveVideoId) {
+        const id = pendingLiveVideoId;
+        const autoplay = pendingLiveAutoplay;
+        pendingLiveVideoId = '';
+        pendingLiveAutoplay = false;
+        createOrLoadLivePlayer(id, autoplay);
+      }
+    };
+
+    podcastToolBtn.addEventListener('click', () => togglePodcastTool(true));
+    closeBtn.addEventListener('click', () => togglePodcastTool(false));
+    refreshBtn.addEventListener('click', () => {
+      applySearch();
+      setPlayerStatus('Playlist refreshed.');
+    });
+    showMoreTracksBtn.addEventListener('click', () => {
+      homeExpanded = !homeExpanded;
+      homeAllTracksWrap.style.display = homeExpanded ? 'block' : 'none';
+      showMoreTracksBtn.textContent = homeExpanded ? 'បិទបញ្ជី' : 'បង្ហាញបន្ថែម';
+    });
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    podcastSearch.addEventListener('input', applySearch);
+
+    playPauseBtn.addEventListener('click', () => {
+      if (!ytPlayer || !ytPlayer.getPlayerState) {
+        playCurrent();
+        return;
+      }
+      const state = ytPlayer.getPlayerState();
+      if (state === window.YT?.PlayerState?.PLAYING) pauseCurrent();
+      else playCurrent();
+    });
+    nextBtn.addEventListener('click', playNext);
+    prevBtn.addEventListener('click', playPrev);
+    repeatBtn.addEventListener('click', () => {
+      repeatMode = (repeatMode + 1) % 3;
+      updateRepeatUi();
+    });
+
+    livePlayBtn.addEventListener('click', async () => {
+      if (!liveStreamData?.isLive || !liveStreamData?.videoId) return;
+      togglePodcastTool(false);
+      createOrLoadLivePlayer(liveStreamData.videoId, true);
+      await registerLiveView(liveStreamData.videoId);
+      await registerLiveWatcher(liveStreamData.videoId);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (liveStreamData?.videoId) removeLiveWatcher(liveStreamData.videoId);
+    });
+
+    broadcastToolBtn.addEventListener('click', openBroadcastBox);
+    broadcastCloseBtn.addEventListener('click', closeBroadcastBox);
+    broadcastOverlay.addEventListener('click', e => { if (e.target === broadcastOverlay) closeBroadcastBox(); });
+
+    broadcastUnlockBtn.addEventListener('click', async () => {
+      const email = broadcastEmailInput.value.trim();
+      const password = broadcastKeyInput.value;
+      if (!email || !password) {
+        setBroadcastStatus('Please enter email and password.');
+        return;
+      }
+      setBroadcastStatus('Signing in...');
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        broadcastUserEmail = email;
+        setBroadcastStatus('Signed in successfully.');
+      } catch (error) {
+        console.error(error);
+        setBroadcastStatus('Login failed. Check Firebase Auth email/password.');
+      }
+    });
+
+    broadcastLogoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        setBroadcastStatus('Logged out.');
+      } catch (error) {
+        setBroadcastStatus('Logout failed.');
+      }
+    });
+
+    onAuthStateChanged(auth, user => {
+      broadcastUserEmail = user?.email || '';
+      updateBroadcastAccessUi(!!user);
+    });
+
+    [broadcastTitleInput, broadcastPreacherInput, broadcastDateInput, broadcastSubtitleInput, broadcastVideoInput]
+      .forEach(el => el.addEventListener('input', updateTrackPreview));
+    [broadcastLiveEnabledInput, broadcastLiveTitleInput, broadcastLiveSpeakerInput, broadcastYoutubeIdInput]
+      .forEach(el => el.addEventListener('input', updateLivePreview));
+    broadcastPreviewBtn.addEventListener('click', updateTrackPreview);
+    broadcastResetBtn.addEventListener('click', clearTrackForm);
+    broadcastSaveBtn.addEventListener('click', saveTrackRecord);
+
+    broadcastLoadLiveBtn.addEventListener('click', () => fillLiveForm(liveStreamData));
+    broadcastSaveLiveBtn.addEventListener('click', saveLiveStreamRecord);
+    broadcastClearLiveBtn.addEventListener('click', clearLiveForm);
+
+    broadcastExportBtn.addEventListener('click', generateExportJson);
+    broadcastCopyExportBtn.addEventListener('click', copyExportJson);
+    broadcastToggleExportBtn.addEventListener('click', () => {
+      const collapsed = broadcastExportPreviewWrap.classList.toggle('collapsed');
+      broadcastToggleExportBtn.textContent = collapsed ? 'Show JSON' : 'Hide JSON';
+    });
+
+    function makeDraggable() {
+      let isDragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+      podcastHeader.addEventListener('pointerdown', e => {
+        if (window.innerWidth <= 520) return;
+        isDragging = true;
+        const rect = podcastTool.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        podcastTool.style.left = rect.left + 'px';
+        podcastTool.style.top = rect.top + 'px';
+        podcastTool.style.right = 'auto';
+        podcastHeader.setPointerCapture(e.pointerId);
+      });
+      podcastHeader.addEventListener('pointermove', e => {
+        if (!isDragging) return;
+        podcastTool.style.left = Math.max(8, Math.min(window.innerWidth - podcastTool.offsetWidth - 8, e.clientX - offsetX)) + 'px';
+        podcastTool.style.top = Math.max(8, Math.min(window.innerHeight - podcastTool.offsetHeight - 8, e.clientY - offsetY)) + 'px';
+      });
+      podcastHeader.addEventListener('pointerup', () => { isDragging = false; });
+      podcastHeader.addEventListener('pointercancel', () => { isDragging = false; });
+    }
+
+    const deepLinkTrack = new URLSearchParams(location.search).get('t');
+
+    document.body.classList.add('preloading');
+    applyTheme();
+    updateRepeatUi();
+    updateTrackPreview();
+    updateLivePreview();
+    updateBroadcastAccessUi(false);
+    trackVisitor();
+    listenVisitorCount();
+    listenPlaylist();
+    listenLiveStream();
+    listenToPlayCounts();
+    listenToLikeCounts();
+    listenToShareCounts();
+    makeDraggable();
+    hidePreloader();
+
+    setTimeout(() => {
+      if (deepLinkTrack) {
+        const key = getTrackKey(deepLinkTrack);
+        const tryOpen = () => {
+          const found = playlist.findIndex(item => item.videoId === key);
+          if (found >= 0) {
+            togglePodcastTool(true);
+            playTrack(found, true);
+          }
+        };
+        tryOpen();
+        setTimeout(tryOpen, 1500);
+      }
+    }, 1200);
+  </script>
+</body>
+</html>
